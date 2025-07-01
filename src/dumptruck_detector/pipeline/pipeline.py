@@ -1,31 +1,45 @@
 import threading
 import cv2
 from dumptruck_detector.pipeline.dumptruck_detector import DumpTruckDetector
+from collections import defaultdict
+
+track_trails = defaultdict(list)
+MAX_TRAIL_LENGTH = 20 
 
 def draw_detections(frame, detections, detector, label="dumptruck"):
     for det in detections:
         x1, y1, x2, y2 = map(int, det.bbox)
-        direction = detector.active_ids.get(det.track_id, "N/A")
+        cx, cy = (x1 + x2) // 2, (y1 + y2) // 2
+        track_id = det.track_id
+        direction = detector.active_ids.get(track_id, "N/A")
 
-        # Color by direction
+        # Save centroid for trail
+        track_trails[track_id].append((cx, cy))
+        if len(track_trails[track_id]) > MAX_TRAIL_LENGTH:
+            track_trails[track_id].pop(0)
+
+        # Choose color
         if direction == "inbound":
-            color = (0, 255, 0)  # Green
+            color = (0, 255, 0)
         elif direction == "outbound":
-            color = (0, 0, 255)  # Red
+            color = (0, 0, 255)
         else:
-            color = (200, 200, 200)  # Gray (unknown)
+            color = (200, 200, 200)
 
         # Draw bounding box
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)
 
-        # Draw label with track ID and direction
-        text = f"{label} {det.track_id} ({direction})"
-        cv2.putText(
-            frame, text, (x1, y1 - 10),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, thickness=2
-        )
+        # Draw track ID label
+        text = f"{label} {track_id} ({direction})"
+        cv2.putText(frame, text, (x1, y1 - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, thickness=2)
 
-    # Draw the current counter in top-left corner
+        # Draw trailing line
+        pts = track_trails[track_id]
+        for j in range(1, len(pts)):
+            cv2.line(frame, pts[j - 1], pts[j], color, 2)
+
+    # Draw counter
     cv2.putText(
         frame,
         f"Counter: {detector.counter}",
@@ -38,7 +52,8 @@ def draw_detections(frame, detections, detector, label="dumptruck"):
     )
 
 
-def run_pipeline(video_url, model_path, area_boundary, camera_id):
+
+def run_pipeline(video_url, model_path, area_boundary, camera_id, headless=False):
     """
     Runs detection pipeline for a single video stream.
     """
@@ -64,19 +79,21 @@ def run_pipeline(video_url, model_path, area_boundary, camera_id):
         detections = detector.process_frame(frame)
         print(f"[{camera_id}] Frame processed. Detections: {[(d.track_id, detector.active_ids.get(d.track_id)) for d in detections]}")
 
-        # draw_detections(frame, detections, detector)
-        # cv2.line(frame, (area_boundary, 0), (area_boundary, frame.shape[0]), (255, 255, 0), 2)
+        if not headless:
+            draw_detections(frame, detections, detector)
+            cv2.line(frame, (area_boundary, 0), (area_boundary, frame.shape[0]), (255, 255, 0), 2)
 
-        # cv2.imshow(window_name, frame)
-        # if cv2.waitKey(1) & 0xFF == ord("q"):
-        #     break
-
+            cv2.imshow(window_name, frame)
+            if cv2.waitKey(1) & 0xFF == ord("q"):
+                break
 
     cap.release()
-    cv2.destroyWindow(window_name)
+    if not headless:
+        cv2.destroyWindow(window_name)
 
 
-def run_multi_camera_pipeline(video_sources, model_path, area_boundary=480):
+
+def run_multi_camera_pipeline(video_sources, model_path, area_boundary=480, headless=False):
     """
     Launches multiple video pipelines in parallel using threads.
     Each camera gets a unique ID and runs its own DumpTruckDetector.
@@ -86,7 +103,7 @@ def run_multi_camera_pipeline(video_sources, model_path, area_boundary=480):
         camera_id = f"cam{idx+1:02d}"
         thread = threading.Thread(
             target=run_pipeline,
-            args=(video_url, model_path, area_boundary, camera_id),
+            args=(video_url, model_path, area_boundary, camera_id, headless),
             daemon=True
         )
         threads.append(thread)
@@ -95,4 +112,6 @@ def run_multi_camera_pipeline(video_sources, model_path, area_boundary=480):
     for thread in threads:
         thread.join()
 
-    cv2.destroyAllWindows()
+    if not headless:
+        cv2.destroyAllWindows()
+
