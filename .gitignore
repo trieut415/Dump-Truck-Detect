@@ -1,0 +1,149 @@
+###############################################################################
+# Operating-system cruft
+###############################################################################
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Trash
+.Trash-*
+
+###############################################################################
+# VCS metadata (in case repos get nested)
+###############################################################################
+*.orig
+*.swp
+*.swo
+
+###############################################################################
+# Build-system & dependency directories
+###############################################################################
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+# tox / virtualenv
+.tox/
+.env
+.venv/
+test_venv/
+# Poetry
+.poetry/
+# pip tools lock
+pip-wheel-metadata/
+
+# Node / JavaScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Go
+bin/
+pkg/
+
+# Java / Kotlin / Scala
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+.idea/
+.gradle/
+target/
+out/
+
+# Rust
+/target/
+
+# C / C++
+*.o
+*.a
+*.so
+*.obj
+*.exe
+*.dll
+*.lib
+*.dSYM/
+
+###############################################################################
+# IDEs & editors
+###############################################################################
+# VS Code
+.vscode/
+.history/
+
+# JetBrains IDEs
+.idea/
+*.iws
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.cproject
+.settings/
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcuserstate
+
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+###############################################################################
+# Assets & generated files
+###############################################################################
+# Logs
+*.log
+
+# Coverage
+coverage.*
+.coverage/
+.hypothesis/
+
+# Test reports
+junit-*.xml
+
+# Dist packages
+dist/
+build/
+*.egg-info/
+
+# Docs
+_site/
+docs/_build/
+book/_build/
+
+# Compressed archives
+*.7z
+*.zip
+*.tar
+*.gz
+*.bz2
+*.xz
+*.tgz
+*.tar.gz
+*.tar.bz2
+
+###############################################################################
+# Secrets (uncomment if you keep env files outside repo)
+###############################################################################
+# .env
+# .env.*.local
+# *.key
+# *.pem
