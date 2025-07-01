@@ -20,7 +20,7 @@ pip install -r requirements.txt
 ---
 ### Command-Line Arguments
 
-The pipeline accepts configuration via a YAML file. The default configuration is stored in [config.yaml](). You may also specify your own yaml config file:
+The pipeline accepts configuration via a YAML file. The default configuration is stored in [config.yaml](./config.yaml). You may also specify your own yaml config file:
 
 Use the `--config` flag to specify the path.
 
