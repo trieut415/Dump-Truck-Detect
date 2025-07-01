@@ -1,0 +1,2 @@
+[console_scripts]
+dumptruck = dumptruck_detector.cli:main

@@ -1,0 +1,17 @@
+MANIFEST.in
+README.md
+pyproject.toml
+setup.py
+src/dumptruck_detector/__init__.py
+src/dumptruck_detector.egg-info/PKG-INFO
+src/dumptruck_detector.egg-info/SOURCES.txt
+src/dumptruck_detector.egg-info/dependency_links.txt
+src/dumptruck_detector.egg-info/entry_points.txt
+src/dumptruck_detector.egg-info/top_level.txt
+src/dumptruck_detector/common/__init__.py
+src/dumptruck_detector/common/common_utils.py
+src/dumptruck_detector/pipeline/__init__.py
+src/dumptruck_detector/pipeline/dumptruck_detector.py
+src/dumptruck_detector/pipeline/pipeline.py
+src/dumptruck_detector/resources/__init__.py
+src/dumptruck_detector/resources/dumptruck2.pt

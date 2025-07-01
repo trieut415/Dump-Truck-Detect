@@ -1,0 +1,5 @@
+video_sources:
+  - rtsp://localhost:8554/stream1
+  - rtsp://localhost:8554/stream2
+model_path: src/dumptruck_detector/resources/single_class_dumptruck.pt
+area_boundary: 480
