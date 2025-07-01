@@ -1,10 +1,15 @@
 import threading
 import cv2
-from dumptruck_detector.pipeline.dumptruck_detector import DumpTruckDetector
 from collections import defaultdict
 
+from dumptruck_detector.pipeline.dumptruck_detector import DumpTruckDetector
+from dumptruck_detector.common.common_utils import get_logger
+
+logger = get_logger("pipeline")
+
 track_trails = defaultdict(list)
-MAX_TRAIL_LENGTH = 20 
+MAX_TRAIL_LENGTH = 20
+
 
 def draw_detections(frame, detections, detector, label="dumptruck"):
     for det in detections:
@@ -52,11 +57,7 @@ def draw_detections(frame, detections, detector, label="dumptruck"):
     )
 
 
-
 def run_pipeline(video_url, model_path, area_boundary, camera_id, headless=False):
-    """
-    Runs detection pipeline for a single video stream.
-    """
     detector = DumpTruckDetector(
         model_path=model_path,
         area_boundary=area_boundary,
@@ -66,18 +67,21 @@ def run_pipeline(video_url, model_path, area_boundary, camera_id, headless=False
     cap = cv2.VideoCapture(video_url)
 
     if not cap.isOpened():
-        print(f"[{camera_id}] Failed to open video stream: {video_url}")
+        logger.warning(f"[{camera_id}] Failed to open video stream: {video_url}")
         return
 
     window_name = f"Camera {camera_id}"
     while True:
         ret, frame = cap.read()
         if not ret:
-            print(f"[{camera_id}] Stream ended or read failed.")
+            logger.warning(f"[{camera_id}] Stream ended or read failed.")
             break
 
         detections = detector.process_frame(frame)
-        print(f"[{camera_id}] Frame processed. Detections: {[(d.track_id, detector.active_ids.get(d.track_id)) for d in detections]}")
+        logger.info(
+            f"[{camera_id}] Frame processed. "
+            f"Detections: {[(d.track_id, detector.active_ids.get(d.track_id)) for d in detections]}"
+        )
 
         if not headless:
             draw_detections(frame, detections, detector)
@@ -92,15 +96,11 @@ def run_pipeline(video_url, model_path, area_boundary, camera_id, headless=False
         cv2.destroyWindow(window_name)
 
 
-
 def run_multi_camera_pipeline(video_sources, model_path, area_boundary=480, headless=False):
-    """
-    Launches multiple video pipelines in parallel using threads.
-    Each camera gets a unique ID and runs its own DumpTruckDetector.
-    """
     threads = []
     for idx, video_url in enumerate(video_sources):
         camera_id = f"cam{idx+1:02d}"
+        logger.info(f"Starting pipeline for {camera_id} - {video_url}")
         thread = threading.Thread(
             target=run_pipeline,
             args=(video_url, model_path, area_boundary, camera_id, headless),
@@ -114,4 +114,3 @@ def run_multi_camera_pipeline(video_sources, model_path, area_boundary=480, head
 
     if not headless:
         cv2.destroyAllWindows()
-

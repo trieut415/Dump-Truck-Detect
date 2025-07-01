@@ -1,5 +1,4 @@
 import os
-import logging
 from ultralytics import YOLO
 from dumptruck_detector.common.common_utils import (
     find_project_root,
@@ -10,6 +9,7 @@ from dumptruck_detector.pipeline.types import Detection
 
 class DumpTruckDetector:
     def __init__(self, model_path, area_boundary, camera_id):
+        self.logger = get_logger(f"detector:{camera_id}")
         self.model = self.load_model(model_path)
         self.counter = 0
         self.active_ids = {}  # track object IDs and their direction
@@ -21,8 +21,8 @@ class DumpTruckDetector:
     def load_model(self, model_filename):
         base_dir = find_project_root()
         model_path = os.path.join(base_dir, "src", "dumptruck_detector", "resources", model_filename)
+        self.logger.info(f"Loading model from {model_path}")
         return YOLO(model_path)
-
 
     def detect_and_track(self, frame):
         results = self.model.track(
@@ -30,9 +30,8 @@ class DumpTruckDetector:
             persist=True,
             stream=False,
             tracker="botsort.yaml",
-            iou=0.3  # Default 0.45
+            iou=0.3
         )[0]
-
 
         detections = []
         if not hasattr(results, "boxes") or results.boxes is None:
@@ -48,28 +47,22 @@ class DumpTruckDetector:
         return detections
 
     def classify_direction(self, track_id, bbox):
-        """
-        Determine direction based on whether the object crossed a vertical boundary line.
-        """
         x1, y1, x2, y2 = bbox
         center_x = (x1 + x2) / 2
 
-        # No prior position → can't determine yet
         if track_id not in self.track_history:
             self.track_history[track_id] = center_x
-            return None  # skip counting this frame
+            return None
 
         prev_x = self.track_history[track_id]
-        self.track_history[track_id] = center_x  # update history
+        self.track_history[track_id] = center_x
 
-        # Hardcoded boundary check
         if prev_x < self.area_boundary <= center_x:
             return "inbound"
         elif prev_x > self.area_boundary >= center_x:
             return "outbound"
         else:
-            return None  # hasn't crossed boundary yet
-
+            return None
 
     def update_counter(self, detections):
         for det in detections:
@@ -78,11 +71,13 @@ class DumpTruckDetector:
                 self.active_ids[det.track_id] = direction
                 if direction == 'inbound':
                     self.counter += 1
+                    self.logger.info(f"[{self.camera_id}] Inbound count incremented. Total: {self.counter}")
             else:
                 prev_direction = self.active_ids[det.track_id]
                 if prev_direction == 'inbound' and direction == 'outbound':
                     self.counter -= 1
                     del self.active_ids[det.track_id]
+                    self.logger.info(f"[{self.camera_id}] Outbound count decremented. Total: {self.counter}")
         self._check_alarm_state()
 
     def _check_alarm_state(self):
@@ -93,8 +88,7 @@ class DumpTruckDetector:
 
     def trigger_alarm(self, state: bool):
         self.alarm_on = state
-        # Send TCP/IP camera command here
-        print(f"Alarm {'ON' if state else 'OFF'}")
+        self.logger.info(f"[{self.camera_id}] Alarm {'ON' if state else 'OFF'}")
 
     def process_frame(self, frame):
         detections = self.detect_and_track(frame)
