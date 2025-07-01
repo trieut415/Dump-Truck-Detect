@@ -8,7 +8,7 @@ This repository contains a data pipeline for dumptruck detection and tracking.
 ```bash
 git clone https://github.com/trieut415/Dump-Truck-Detect.git
 ```
-
+---
 ### Installation
 Run the following script to install all necessary dependencies:
 ```bash
@@ -17,7 +17,7 @@ python3 -m venv dumptruck_env
 source dumptruck_env/bin/activate
 pip install -r requirements.txt
 ```
-
+---
 ### Command-Line Arguments
 
 The pipeline accepts configuration via a YAML file. The default configuration is stored in [config.yaml](). You may also specify your own yaml config file:
