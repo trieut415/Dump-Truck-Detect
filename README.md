@@ -1,10 +1,8 @@
 # Dumptruck Detector
-<img src="src/eartag_jetson/resources/demo.jpg" alt="dumptruck tracking" width="100%">
+<img src="src/dumptruck_detector/resources/demo.jpg" alt="dumptruck tracking" width="100%">
 This repository contains a data pipeline for dumptruck detection and tracking.
 
-# Get Started
-
-## 2. Get Started
+## Get Started
 
 ### Clone the Repository
 ```bash
@@ -20,12 +18,7 @@ source dumptruck_env/bin/activate
 pip install -r requirements.txt
 ```
 
-Activate the virtual environment:
-```bash
-source labby-eartag/bin/activate
-```
-
-## Command-Line Arguments
+### Command-Line Arguments
 
 The pipeline accepts configuration via a YAML file. The default configuration is stored in [config.yaml](). You may also specify your own yaml config file:
 
