@@ -12,11 +12,12 @@ git clone https://github.com/trieut415/Dump-Truck-Detect.git
 ```
 
 ### Installation
-Run the following script to install all necessary dependancies:
+Run the following script to install all necessary dependencies:
 ```bash
-cd Eartag-Jetson
-chmod +x setup_dependancies.sh
-./setup_dependancies.sh
+cd Dump-Truck-Detect
+python3 -m venv dumptruck_env
+source dumptruck_env/bin/activate
+pip install -r requirements.txt
 ```
 
 Activate the virtual environment:
