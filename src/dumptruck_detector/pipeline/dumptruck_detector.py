@@ -14,9 +14,12 @@ class DumpTruckDetector:
         self.counter = 0
         self.active_ids = {}  # track object IDs and their direction
         self.track_history = {}  # track_id -> previous center_x
+        self.classified = set() 
+        self.crossing_counts = {}
         self.area_boundary = area_boundary
         self.alarm_on = False
         self.camera_id = camera_id
+        self.start_side = {}
 
     def load_model(self, model_filename):
         base_dir = find_project_root()
@@ -45,40 +48,70 @@ class DumpTruckDetector:
             detections.append(Detection(track_id, class_id, bbox))
 
         return detections
-
+    
     def classify_direction(self, track_id, bbox):
-        x1, y1, x2, y2 = bbox
-        center_x = (x1 + x2) / 2
+        x1, _, x2, _ = bbox
+        cx  = (x1 + x2) / 2
+        bnd = self.area_boundary
 
-        if track_id not in self.track_history:
-            self.track_history[track_id] = center_x
+        # ── side bookkeeping ─────────────────────────────────────────────────────
+        box_left  = x2 < bnd
+        box_right = x1 > bnd
+        box_span  = not (box_left or box_right)
+
+        if track_id not in self.track_history:          # first sighting
+            self.track_history[track_id]  = cx
+            self.crossing_counts[track_id] = 0
+            self.start_side[track_id]      = box_right  # True = started right
             return None
 
-        prev_x = self.track_history[track_id]
-        self.track_history[track_id] = center_x
+        self.track_history[track_id] = cx
+        started_on_right = self.start_side[track_id]
 
-        if prev_x < self.area_boundary <= center_x:
-            return "inbound"
-        elif prev_x > self.area_boundary >= center_x:
-            return "outbound"
-        else:
-            return None
+        # opposite side (incl. touching the line)
+        opposite = (box_left or box_span) if started_on_right else (box_right or box_span)
+
+        # debounce ---------------------------------------------------------------
+        self.crossing_counts[track_id] = (
+            self.crossing_counts[track_id] + 1 if opposite else 0
+        )
+
+        if self.crossing_counts[track_id] >= 3:
+            self.crossing_counts[track_id] = 0
+            self.start_side[track_id]      = not started_on_right
+        
+        return "outbound" if started_on_right else "inbound"
+
+
+
+
 
     def update_counter(self, detections):
         for det in detections:
             direction = self.classify_direction(det.track_id, det.bbox)
+
+            # ignore frames where the debounce has not yet settled
+            if direction is None:
+                continue
+
             if det.track_id not in self.active_ids:
+                # first definitive direction for this ID
                 self.active_ids[det.track_id] = direction
-                if direction == 'inbound':
+                if direction == "inbound":
                     self.counter += 1
-                    self.logger.info(f"[{self.camera_id}] Inbound count incremented. Total: {self.counter}")
+                    self.logger.info(f"[{self.camera_id}] Inbound count incremented → {self.counter}")
             else:
                 prev_direction = self.active_ids[det.track_id]
-                if prev_direction == 'inbound' and direction == 'outbound':
-                    self.counter -= 1
-                    del self.active_ids[det.track_id]
-                    self.logger.info(f"[{self.camera_id}] Outbound count decremented. Total: {self.counter}")
+                if prev_direction != direction:
+                    # truck turned around – adjust the tally
+                    if prev_direction == "inbound" and direction == "outbound":
+                        self.counter -= 1
+                    elif prev_direction == "outbound" and direction == "inbound":
+                        self.counter += 1
+                    self.active_ids[det.track_id] = direction  # update to new state
+
         self._check_alarm_state()
+
 
     def _check_alarm_state(self):
         if self.counter > 0 and not self.alarm_on:

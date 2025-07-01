@@ -1,6 +1,6 @@
 import argparse
 import yaml
-from dumptruck_detector.pipeline.pipeline import run_multi_camera_pipeline
+from dumptruck_detector.pipeline.pipeline import run_pipeline, run_multi_camera_pipeline
 
 
 def load_config(path):
@@ -25,9 +25,18 @@ if __name__ == "__main__":
     video_sources = args.override_sources or config["video_sources"]
     headless = args.headless or config.get("headless", False)
 
-    run_multi_camera_pipeline(
-        video_sources=video_sources,
-        model_path=model_path,
-        area_boundary=area_boundary,
-        headless=headless
-    )
+    if len(video_sources) == 1:
+        run_pipeline(
+            video_url=video_sources[0],
+            model_path=model_path,
+            area_boundary=area_boundary,
+            camera_id="cam01",
+            headless=headless
+        )
+    else:
+        run_multi_camera_pipeline(
+            video_sources=video_sources,
+            model_path=model_path,
+            area_boundary=area_boundary,
+            headless=headless
+        )

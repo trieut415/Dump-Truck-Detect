@@ -29,7 +29,7 @@ def draw_detections(frame, detections, detector, label="dumptruck"):
         elif direction == "outbound":
             color = (0, 0, 255)
         else:
-            color = (200, 200, 200)
+            color = (0, 255, 255)
 
         # Draw bounding box
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, thickness=2)

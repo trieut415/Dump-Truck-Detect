@@ -1,9 +1,9 @@
 model_path: single_class_dumptruck.pt
 video_sources:
-  - rtsp://localhost:8554/cam1
-  - rtsp://localhost:8554/cam2
+  - rtsp://localhost:8554/stream1
+  - rtsp://localhost:8554/stream2
 area_boundary: 480
-headless: true
+headless: false
 camera_ids:
   - cam01
   - cam02
