@@ -48,4 +48,29 @@ If you don't pass an argument explicitly, values from config.yaml will be used a
 | `--headless`      | `flag` | Optional. Run in headless mode (no display). Useful for servers or logs.      |
 | `--camera-ids`    | `list` | Optional. Custom camera IDs for multi-stream setup (must match source count). |
 
+---
 
+# General local testing
+To run the local pytest suite:
+```bash
+python -m pytest tests/
+```
+
+---
+
+#### 1. To run test stream(s), we first have to host a stream over IP, downlaod mediamtx. In one terminal, run:
+```bash
+./mediamtx
+```
+#### 2. In another terminal run:
+```bash
+ffmpeg -re -stream_loop -1 -i src/test_video1.mp4 -vcodec libx264 -f rtsp rtsp://localhost:8554/stream1
+```
+#### 3. If more test streams are supplied:
+```bash
+ffmpeg -re -stream_loop -1 -i src/test_video2.mp4 -vcodec libx264 -f rtsp rtsp://localhost:8554/stream2
+```
+#### Then, run the main script:
+```bash
+python3 src/main.py --config config.yaml
+```
