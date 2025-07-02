@@ -50,7 +50,7 @@ If you don't pass an argument explicitly, values from config.yaml will be used a
 
 ---
 
-# General local testing
+# Running Tests Locally
 To run the local pytest suite:
 ```bash
 python -m pytest tests/
