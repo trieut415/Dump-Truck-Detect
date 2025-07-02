@@ -1,6 +1,6 @@
 # Dumptruck Detector
+This repository contains a computer vision pipeline for detecting, tracking, and classifying dump trucks in real-time video streams. It includes direction classification, trail visualization, event counting with debouncing, and alarm triggers based on configurable thresholds.
 <img src="src/dumptruck_detector/resources/demo.jpg" alt="dumptruck tracking" width="100%">
-This repository contains a data pipeline for dumptruck detection and tracking.
 
 ## Get Started
 
