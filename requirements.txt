@@ -5,7 +5,6 @@ contourpy==1.3.2
 cycler==0.12.1
 dataclasses==0.6
 -e git+https://github.com/trieut415/Dump-Truck-Detect.git@35f9ca926e72cf8b9dc54bdf94092c42c68d0b78#egg=dumptruck_detector
--e git+https://github.com/trieut415/Dump-Truck-Detect.git@35f9ca926e72cf8b9dc54bdf94092c42c68d0b78#egg=eartag_jetson
 filelock==3.18.0
 fonttools==4.58.4
 fsspec==2025.5.1
