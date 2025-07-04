@@ -15,6 +15,7 @@ Run the following script to install all necessary dependencies:
 cd Dump-Truck-Detect
 python3 -m venv dumptruck_env
 source dumptruck_env/bin/activate
+pip install .
 pip install -r requirements.txt
 ```
 ---
